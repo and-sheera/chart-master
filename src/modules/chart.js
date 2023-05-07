@@ -1,7 +1,7 @@
 export class Chart {
   constructor(element) {
     this.element = element
-    element.liteChart = this
+    element.chartMaster = this
   }
 
   createLayout() {

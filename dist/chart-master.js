@@ -1,6 +1,6 @@
 class x {
   constructor(i) {
-    this.element = i, i.liteChart = this;
+    this.element = i, i.chartMaster = this;
   }
   createLayout() {
     this.element.classList.add("chart-master"), this.element.classList.add(`chart-master--${this.cssModificator}`), this.chartWrapper = document.createElement("div"), this.chartWrapper.classList = "chart-master__wrapper", this.canvas = document.createElement("canvas"), this.chartWrapper.append(this.canvas), this.element.append(this.chartWrapper), this.ctx = this.canvas.getContext("2d");
@@ -549,5 +549,5 @@ class b {
   }
 }
 export {
-  b as LiteChart
+  b as ChartMaster
 };

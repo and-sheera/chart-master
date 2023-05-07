@@ -1,7 +1,16 @@
 {
   "name": "chart-master",
-  "version": "1.0.0",
+  "version": "1.0.3",
   "type": "module",
+  "files": ["dist"],
+  "main": "./dist/chart-master.umd.cjs",
+  "module": "./dist/chart-master.js",
+  "exports": {
+    ".": {
+      "import": "./dist/chart-master.js",
+      "require": "./dist/chart-master.umd.cjs"
+    }
+  },
   "description": "simple charting library",
   "author": "Andrew Shirnin",
   "license": "MIT",
@@ -15,7 +24,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/Apnoea/vite-bem-template.git"
+    "url": "https://github.com/and-sheera/chart-master.git"
   },
   "devDependencies": {
     "@babel/core": "^7.21.4",

@@ -3,7 +3,7 @@ import LineChart from '../modules/line-chart'
 import PieChart from '../modules/pie-chart'
 import '../styles/style.scss'
 
-export class LiteChart {
+export class ChartMaster {
   constructor(type, settings) {
     let chart
     switch (type) {
