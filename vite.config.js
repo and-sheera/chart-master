@@ -21,8 +21,8 @@ export default defineConfig({
     chunkSizeWarningLimit: '1024',
     lib: {
       entry: resolve(path.dirname(url.fileURLToPath(import.meta.url)), 'src/js/index.js'),
-      name: 'lite-chart',
-      fileName: 'lite-chart'
+      name: 'chart-master',
+      fileName: 'chart-master'
     },
     // rollupOptions: {
     //   output: {

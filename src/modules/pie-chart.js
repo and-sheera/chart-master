@@ -83,33 +83,33 @@ export default class PieChart extends Chart {
 
     if (!this.legendElement) {
       this.legendElement = document.createElement('div')
-      this.legendElement.classList.add('lite-chart__legend')
+      this.legendElement.classList.add('chart-master__legend')
       this.element.append(this.legendElement)
     }
 
     this.legendElement.innerHTML = ''
 
     const legendList = document.createElement('ul')
-    legendList.classList.add('lite-chart__legend-list')
+    legendList.classList.add('chart-master__legend-list')
     this.legendElement.append(legendList)
 
     for (const slice of this.data) {
       const legendItem = document.createElement('li')
-      legendItem.classList.add('lite-chart__legend-item')
+      legendItem.classList.add('chart-master__legend-item')
       legendList.append(legendItem)
 
       const colorBox = document.createElement('span')
-      colorBox.classList.add('lite-chart__legend-color')
+      colorBox.classList.add('chart-master__legend-color')
       colorBox.style.backgroundColor = slice.color
       legendItem.append(colorBox)
 
       const label = document.createElement('span')
-      label.classList.add('lite-chart__legend-label')
+      label.classList.add('chart-master__legend-label')
       label.textContent = slice.label
       legendItem.append(label)
 
       const value = document.createElement('span')
-      value.classList.add('lite-chart__legend-value')
+      value.classList.add('chart-master__legend-value')
       value.textContent = `${Number.parseFloat(((slice.value / this.params.totalValue) * 100).toFixed(2))}%`
       legendItem.append(value)
     }
@@ -180,12 +180,12 @@ export default class PieChart extends Chart {
       this.lablesElement.innerHTML = ''
     } else {
       this.lablesElement = document.createElement('div')
-      this.lablesElement.classList.add('lite-chart__labels')
+      this.lablesElement.classList.add('chart-master__labels')
     }
 
     for (const segment of this.segments) {
       const label = document.createElement('div')
-      label.classList.add('lite-chart__label')
+      label.classList.add('chart-master__label')
 
       label.innerHTML = `
       <div class="chart__label-label">${segment.label}</div>

@@ -5,10 +5,10 @@ export class Chart {
   }
 
   createLayout() {
-    this.element.classList.add('lite-chart')
-    this.element.classList.add(`lite-chart--${this.cssModificator}`)
+    this.element.classList.add('chart-master')
+    this.element.classList.add(`chart-master--${this.cssModificator}`)
     this.chartWrapper = document.createElement('div')
-    this.chartWrapper.classList = 'lite-chart__wrapper'
+    this.chartWrapper.classList = 'chart-master__wrapper'
     this.canvas = document.createElement('canvas')
     this.chartWrapper.append(this.canvas)
     this.element.append(this.chartWrapper)
@@ -55,16 +55,16 @@ export class Chart {
       this.tooltipElement.innerHTML = ''
     } else {
       this.tooltipElement = document.createElement('div')
-      this.tooltipElement.classList.add('lite-chart__tooltip')
+      this.tooltipElement.classList.add('chart-master__tooltip')
     }
 
     this.tooltipElement.innerHTML = tooltipData.label
       ? `
-      <div class="lite-chart__tooltip-label">${tooltipData.label}</div>
-      <div class="lite-chart__tooltip-value">${tooltipData.value}</div>
+      <div class="chart-master__tooltip-label">${tooltipData.label}</div>
+      <div class="chart-master__tooltip-value">${tooltipData.value}</div>
     `
       : `
-      <div class="lite-chart__tooltip-value">${tooltipData.value}</div>
+      <div class="chart-master__tooltip-value">${tooltipData.value}</div>
     `
 
     this.tooltipElement.style.setProperty('--center-x', `${xCoord}px`)

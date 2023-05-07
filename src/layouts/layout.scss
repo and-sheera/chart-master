@@ -6,7 +6,7 @@ canvas {
     height: 300px;
   }
 }
-.lite-chart {
+.chart-master {
   display: flex;
   align-items: center;
   gap: 40px;
@@ -17,7 +17,7 @@ canvas {
     box-sizing: inherit;
   }
   &--pie {
-    .lite-chart {
+    .chart-master {
       &__labels {
         position: absolute;
         inset: 0;
@@ -37,21 +37,21 @@ canvas {
   }
   &--bar,
   &--line {
-    .lite-chart {
+    .chart-master {
       &__labels {
         position: absolute;
         inset: 0;
         font-size: 80%;
         pointer-events: none;
         &--y {
-          .lite-chart__label {
+          .chart-master__label {
             top: var(--y);
             left: 5px;
             transform: translateY(-50%);
           }
         }
         &--x {
-          .lite-chart__label {
+          .chart-master__label {
             bottom: 5px;
             left: calc(var(--x) + var(--pl));
             transform: translateX(-50%);
@@ -64,7 +64,7 @@ canvas {
     }
   }
   &--line {
-    .lite-chart__tooltip {
+    .chart-master__tooltip {
       transform: translate(-50%, -130%);
     }
   }

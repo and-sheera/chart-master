@@ -183,9 +183,9 @@ export default class LineChart extends Chart {
       this.lablesYElement.innerHTML = ''
     } else {
       this.lablesYElement = document.createElement('div')
-      this.lablesYElement.classList.add('lite-chart__labels')
-      this.lablesYElement.classList.add('lite-chart__labels--y')
-      this.chartWrapper.classList.add('lite-chart__wrapper--pl')
+      this.lablesYElement.classList.add('chart-master__labels')
+      this.lablesYElement.classList.add('chart-master__labels--y')
+      this.chartWrapper.classList.add('chart-master__wrapper--pl')
     }
 
     this.labelsY = []
@@ -206,7 +206,7 @@ export default class LineChart extends Chart {
 
     for (const labelItem of this.labelsY) {
       const label = document.createElement('div')
-      label.classList.add('lite-chart__label')
+      label.classList.add('chart-master__label')
       label.textContent = labelItem.value
       label.style.setProperty('--y', `${labelItem.yCoord}px`)
       this.lablesYElement.append(label)
@@ -219,9 +219,9 @@ export default class LineChart extends Chart {
       this.lablesXElement.innerHTML = ''
     } else {
       this.lablesXElement = document.createElement('div')
-      this.lablesXElement.classList.add('lite-chart__labels')
-      this.lablesXElement.classList.add('lite-chart__labels--x')
-      this.chartWrapper.classList.add('lite-chart__wrapper--pb')
+      this.lablesXElement.classList.add('chart-master__labels')
+      this.lablesXElement.classList.add('chart-master__labels--x')
+      this.chartWrapper.classList.add('chart-master__wrapper--pb')
     }
 
     this.labelsX = []
@@ -235,7 +235,7 @@ export default class LineChart extends Chart {
     }
     for (const labelItem of this.labelsX) {
       const label = document.createElement('div')
-      label.classList.add('lite-chart__label')
+      label.classList.add('chart-master__label')
       label.textContent = labelItem.label
       label.style.setProperty('--x', `${labelItem.xCoord}px`)
       this.lablesXElement.append(label)

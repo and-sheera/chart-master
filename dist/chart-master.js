@@ -3,7 +3,7 @@ class x {
     this.element = i, i.liteChart = this;
   }
   createLayout() {
-    this.element.classList.add("lite-chart"), this.element.classList.add(`lite-chart--${this.cssModificator}`), this.chartWrapper = document.createElement("div"), this.chartWrapper.classList = "lite-chart__wrapper", this.canvas = document.createElement("canvas"), this.chartWrapper.append(this.canvas), this.element.append(this.chartWrapper), this.ctx = this.canvas.getContext("2d");
+    this.element.classList.add("chart-master"), this.element.classList.add(`chart-master--${this.cssModificator}`), this.chartWrapper = document.createElement("div"), this.chartWrapper.classList = "chart-master__wrapper", this.canvas = document.createElement("canvas"), this.chartWrapper.append(this.canvas), this.element.append(this.chartWrapper), this.ctx = this.canvas.getContext("2d");
   }
   mainRender() {
     this.ctx.clearRect(0, 0, this.params.width, this.params.height), this.render();
@@ -20,11 +20,11 @@ class x {
     });
   }
   renderTooltip(i, t, s) {
-    this.tooltipElement ? this.tooltipElement.innerHTML = "" : (this.tooltipElement = document.createElement("div"), this.tooltipElement.classList.add("lite-chart__tooltip")), this.tooltipElement.innerHTML = i.label ? `
-      <div class="lite-chart__tooltip-label">${i.label}</div>
-      <div class="lite-chart__tooltip-value">${i.value}</div>
+    this.tooltipElement ? this.tooltipElement.innerHTML = "" : (this.tooltipElement = document.createElement("div"), this.tooltipElement.classList.add("chart-master__tooltip")), this.tooltipElement.innerHTML = i.label ? `
+      <div class="chart-master__tooltip-label">${i.label}</div>
+      <div class="chart-master__tooltip-value">${i.value}</div>
     ` : `
-      <div class="lite-chart__tooltip-value">${i.value}</div>
+      <div class="chart-master__tooltip-value">${i.value}</div>
     `, this.tooltipElement.style.setProperty("--center-x", `${t}px`), this.tooltipElement.style.setProperty("--center-y", `${s}px`), this.chartWrapper.append(this.tooltipElement), this.tooltipElement.classList.add("active");
   }
   removeTooltip() {
@@ -116,7 +116,7 @@ class p extends x {
       this.ctx.fillStyle = i === this.hoveredBarIndex ? this.hoveredBarColor : this.options.barColor, this.ctx.fillRect(t.x, t.y, this.options.barWidth, t.height), this.options.barBorderWidth !== 0 && (this.ctx.strokeStyle = this.options.barBorderColor, this.ctx.lineWidth = this.options.barBorderWidth, this.ctx.strokeRect(t.x, t.y, this.options.barWidth, t.height));
   }
   renderLabelsY() {
-    this.lablesYElement ? this.lablesYElement.innerHTML = "" : (this.lablesYElement = document.createElement("div"), this.lablesYElement.classList.add("lite-chart__labels"), this.lablesYElement.classList.add("lite-chart__labels--y"), this.chartWrapper.classList.add("lite-chart__wrapper--pl")), this.labelsY = [], this.labelsY.push({
+    this.lablesYElement ? this.lablesYElement.innerHTML = "" : (this.lablesYElement = document.createElement("div"), this.lablesYElement.classList.add("chart-master__labels"), this.lablesYElement.classList.add("chart-master__labels--y"), this.chartWrapper.classList.add("chart-master__wrapper--pl")), this.labelsY = [], this.labelsY.push({
       value: 0,
       yCoord: (this.maxBarValue + this.options.paddingTop) * this.unitToPx
     });
@@ -135,12 +135,12 @@ class p extends x {
       }), t -= i;
     for (const s of this.labelsY) {
       const e = document.createElement("div");
-      e.classList.add("lite-chart__label"), e.textContent = s.value, e.style.setProperty("--y", `${s.yCoord}px`), this.lablesYElement.append(e);
+      e.classList.add("chart-master__label"), e.textContent = s.value, e.style.setProperty("--y", `${s.yCoord}px`), this.lablesYElement.append(e);
     }
     this.chartWrapper.append(this.lablesYElement);
   }
   renderLabelsX() {
-    this.lablesXElement ? this.lablesXElement.innerHTML = "" : (this.lablesXElement = document.createElement("div"), this.lablesXElement.classList.add("lite-chart__labels"), this.lablesXElement.classList.add("lite-chart__labels--x"), this.chartWrapper.classList.add("lite-chart__wrapper--pb")), this.labelsX = [];
+    this.lablesXElement ? this.lablesXElement.innerHTML = "" : (this.lablesXElement = document.createElement("div"), this.lablesXElement.classList.add("chart-master__labels"), this.lablesXElement.classList.add("chart-master__labels--x"), this.chartWrapper.classList.add("chart-master__wrapper--pb")), this.labelsX = [];
     for (const i of this.bars)
       this.labelsX.push({
         label: i.label,
@@ -148,7 +148,7 @@ class p extends x {
       });
     for (const i of this.labelsX) {
       const t = document.createElement("div");
-      t.classList.add("lite-chart__label"), t.textContent = i.label, t.style.setProperty("--x", `${i.xCoord}px`), this.lablesXElement.append(t);
+      t.classList.add("chart-master__label"), t.textContent = i.label, t.style.setProperty("--x", `${i.xCoord}px`), this.lablesXElement.append(t);
     }
     this.chartWrapper.append(this.lablesXElement);
   }
@@ -304,7 +304,7 @@ class c extends x {
     }));
   }
   renderLabelsY() {
-    this.lablesYElement ? this.lablesYElement.innerHTML = "" : (this.lablesYElement = document.createElement("div"), this.lablesYElement.classList.add("lite-chart__labels"), this.lablesYElement.classList.add("lite-chart__labels--y"), this.chartWrapper.classList.add("lite-chart__wrapper--pl")), this.labelsY = [];
+    this.lablesYElement ? this.lablesYElement.innerHTML = "" : (this.lablesYElement = document.createElement("div"), this.lablesYElement.classList.add("chart-master__labels"), this.lablesYElement.classList.add("chart-master__labels--y"), this.chartWrapper.classList.add("chart-master__wrapper--pl")), this.labelsY = [];
     const i = (this.params.height - 2 * this.options.padding) / this.options.yAxisSplitNumber, t = Math.max(...this.data), s = Math.min(...this.data);
     this.ctx.strokeStyle = this.options.axisYTickColor, this.ctx.lineWidth = this.options.axisYTickWidth;
     for (let e = 0; e <= this.options.yAxisSplitNumber; e++) {
@@ -316,12 +316,12 @@ class c extends x {
     }
     for (const e of this.labelsY) {
       const a = document.createElement("div");
-      a.classList.add("lite-chart__label"), a.textContent = e.value, a.style.setProperty("--y", `${e.yCoord}px`), this.lablesYElement.append(a);
+      a.classList.add("chart-master__label"), a.textContent = e.value, a.style.setProperty("--y", `${e.yCoord}px`), this.lablesYElement.append(a);
     }
     this.chartWrapper.append(this.lablesYElement);
   }
   renderLabelsX() {
-    this.lablesXElement ? this.lablesXElement.innerHTML = "" : (this.lablesXElement = document.createElement("div"), this.lablesXElement.classList.add("lite-chart__labels"), this.lablesXElement.classList.add("lite-chart__labels--x"), this.chartWrapper.classList.add("lite-chart__wrapper--pb")), this.labelsX = [];
+    this.lablesXElement ? this.lablesXElement.innerHTML = "" : (this.lablesXElement = document.createElement("div"), this.lablesXElement.classList.add("chart-master__labels"), this.lablesXElement.classList.add("chart-master__labels--x"), this.chartWrapper.classList.add("chart-master__wrapper--pb")), this.labelsX = [];
     const i = (this.params.width - 2 * this.options.padding) / (this.data.length - 1);
     for (let t = 0; t < this.data.length; t++) {
       const s = this.options.padding + t * i;
@@ -332,7 +332,7 @@ class c extends x {
     }
     for (const t of this.labelsX) {
       const s = document.createElement("div");
-      s.classList.add("lite-chart__label"), s.textContent = t.label, s.style.setProperty("--x", `${t.xCoord}px`), this.lablesXElement.append(s);
+      s.classList.add("chart-master__label"), s.textContent = t.label, s.style.setProperty("--x", `${t.xCoord}px`), this.lablesXElement.append(s);
     }
     this.chartWrapper.append(this.lablesXElement);
   }
@@ -446,18 +446,18 @@ class m extends x {
   drawLegend() {
     if (!this.options.legend)
       return;
-    this.legendElement || (this.legendElement = document.createElement("div"), this.legendElement.classList.add("lite-chart__legend"), this.element.append(this.legendElement)), this.legendElement.innerHTML = "";
+    this.legendElement || (this.legendElement = document.createElement("div"), this.legendElement.classList.add("chart-master__legend"), this.element.append(this.legendElement)), this.legendElement.innerHTML = "";
     const i = document.createElement("ul");
-    i.classList.add("lite-chart__legend-list"), this.legendElement.append(i);
+    i.classList.add("chart-master__legend-list"), this.legendElement.append(i);
     for (const t of this.data) {
       const s = document.createElement("li");
-      s.classList.add("lite-chart__legend-item"), i.append(s);
+      s.classList.add("chart-master__legend-item"), i.append(s);
       const e = document.createElement("span");
-      e.classList.add("lite-chart__legend-color"), e.style.backgroundColor = t.color, s.append(e);
+      e.classList.add("chart-master__legend-color"), e.style.backgroundColor = t.color, s.append(e);
       const a = document.createElement("span");
-      a.classList.add("lite-chart__legend-label"), a.textContent = t.label, s.append(a);
+      a.classList.add("chart-master__legend-label"), a.textContent = t.label, s.append(a);
       const o = document.createElement("span");
-      o.classList.add("lite-chart__legend-value"), o.textContent = `${Number.parseFloat((t.value / this.params.totalValue * 100).toFixed(2))}%`, s.append(o);
+      o.classList.add("chart-master__legend-value"), o.textContent = `${Number.parseFloat((t.value / this.params.totalValue * 100).toFixed(2))}%`, s.append(o);
     }
   }
   handleMouseMove(i) {
@@ -493,10 +493,10 @@ class m extends x {
     this.stopAnimation(), this.options.tooltip && this.removeTooltip(), this.hoverSegment !== void 0 && (this.segments[this.hoverSegment].currentColor = this.segments[this.hoverSegment].color), this.hoverSegment = void 0, this.drawChart();
   }
   renderLabels() {
-    this.lablesElement ? this.lablesElement.innerHTML = "" : (this.lablesElement = document.createElement("div"), this.lablesElement.classList.add("lite-chart__labels"));
+    this.lablesElement ? this.lablesElement.innerHTML = "" : (this.lablesElement = document.createElement("div"), this.lablesElement.classList.add("chart-master__labels"));
     for (const i of this.segments) {
       const t = document.createElement("div");
-      t.classList.add("lite-chart__label"), t.innerHTML = `
+      t.classList.add("chart-master__label"), t.innerHTML = `
       <div class="chart__label-label">${i.label}</div>
       <div class="chart__label-value">${Number.parseFloat((i.value / this.params.totalValue * 100).toFixed(2))}%</div>
       `;
