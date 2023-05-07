@@ -1,0 +1,16 @@
+block variables
+
+doctype html
+html(lang='ru')
+  block head
+    head
+      meta(charset='utf-8')
+      title=pageTitle
+      meta(content='width=device-width, initial-scale=1' name='viewport')
+      meta(content='ie=edge' http-equiv='x-ua-compatible')
+      link(href='https://vitejs.dev/logo.svg' rel='icon' type='image/x-icon')
+  body
+    .wrapper
+      block content
+    block scripts
+      script(type='module' src='../../js/index.js')
