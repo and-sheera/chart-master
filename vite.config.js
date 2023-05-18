@@ -19,38 +19,38 @@ export default defineConfig({
     outDir,
     emptyOutDir: true,
     chunkSizeWarningLimit: '1024',
-    lib: {
-      entry: resolve(path.dirname(url.fileURLToPath(import.meta.url)), 'src/js/index.js'),
-      name: 'chart-master',
-      fileName: 'chart-master'
-    },
-    // rollupOptions: {
-    //   output: {
-    //     assetFileNames: (assetInfo) => {
-    //       let extType = assetInfo.name.split('.')[1]
-    //       if (/png|jpe?g|svg|gif|tiff|bmp|ico/i.test(extType)) {
-    //         extType = 'images'
-    //       } else if (extType === 'css') {
-    //         extType = 'styles'
-    //       }
-    //       return `${extType}/[name][extname]`
-    //     },
-    //     chunkFileNames: 'scripts/scripts.js'
-    //   }
-    // }
+    // lib: {
+    //   entry: resolve(path.dirname(url.fileURLToPath(import.meta.url)), 'src/js/index.js'),
+    //   name: 'chart-master',
+    //   fileName: 'chart-master'
+    // },
+    rollupOptions: {
+      output: {
+        assetFileNames: (assetInfo) => {
+          let extType = assetInfo.name.split('.')[1]
+          if (/png|jpe?g|svg|gif|tiff|bmp|ico/i.test(extType)) {
+            extType = 'images'
+          } else if (extType === 'css') {
+            extType = 'styles'
+          }
+          return `${extType}/[name][extname]`
+        },
+        chunkFileNames: 'scripts/scripts.js'
+      }
+    }
   },
   plugins: [
     viteBabel({
       presets: ['@babel/preset-env']
     }),
-    // viteMultipage({
-    //   mimeCheck: true,
-    //   open: '/',
-    //   pageDir: 'pages',
-    //   purgeDir: 'pages',
-    //   removePageDirs: true,
-    //   rootPage: 'index.html'
-    // }),
+    viteMultipage({
+      mimeCheck: true,
+      open: '/',
+      pageDir: 'pages',
+      purgeDir: 'pages',
+      removePageDirs: true,
+      rootPage: 'index.html'
+    }),
     vitePug({
       pugOptions: {
         pretty: true

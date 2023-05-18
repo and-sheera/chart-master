@@ -35,6 +35,38 @@ canvas {
       }
     }
   }
+  &--polar {
+    .chart-master {
+      &__labels {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+      }
+      &__label {
+        position: absolute;
+        top: var(--y);
+        left: var(--x);
+        transform: translate(-50%, -100%);
+        font-size: 70%;
+      }
+    }
+  }
+  &--radar {
+    .chart-master {
+      &__labels {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+      }
+      &__label {
+        position: absolute;
+        top: var(--y);
+        left: var(--x);
+        transform: translate(-50%, -50%);
+        font-size: 70%;
+      }
+    }
+  }
   &--bar,
   &--line {
     .chart-master {
