@@ -1,6 +1,6 @@
 {
   "name": "chart-master",
-  "version": "1.0.3",
+  "version": "1.0.8",
   "type": "module",
   "files": [
     "dist"
@@ -16,6 +16,7 @@
   "description": "simple charting library",
   "author": "Andrew Shirnin",
   "license": "MIT",
+  "homepage": "https://and-sheera.github.io/chart-master-demo/",
   "scripts": {
     "dev": "vite",
     "build": "vite build",

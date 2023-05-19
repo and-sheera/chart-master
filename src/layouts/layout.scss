@@ -1,11 +1,11 @@
-canvas {
-  width: 600px;
-  height: 400px;
-  @include media-tablet {
-    width: 300px;
-    height: 300px;
-  }
-}
+// canvas {
+//   width: 600px;
+//   height: 400px;
+//   @include media-tablet {
+//     width: 300px;
+//     height: 300px;
+//   }
+// }
 .chart-master {
   display: flex;
   align-items: center;

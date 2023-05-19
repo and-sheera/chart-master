@@ -2,8 +2,10 @@ import '../styles/style.scss'
 
 export class ChartMaster {
   constructor(element) {
-    this.element = element
-    element.chartMaster = this
+    if (element) {
+      this.element = element
+      element.chartMaster = this
+    }
   }
 
   static createChart(type, settings) {
@@ -1579,54 +1581,54 @@ PieChart.defaultOptions = {
   colorTransitionDuration: 200
 }
 
-document.addEventListener('DOMContentLoaded', function () {
-  const pieChart = ChartMaster.createChart('pie', {
-    element: document.querySelector('#chart1'),
-    data: [
-      { label: 'Category A', value: 60, color: '#FF6384' },
-      { label: 'Category B', value: 25, color: '#36A2EB' },
-      { label: 'Category C', value: 65, color: '#FFCE56' },
-      { label: 'Category D', value: 15, color: '#1c781c' }
-    ],
-    options: {
-      borderWidth: 3,
-      borderColor: '#ffffff'
-    }
-  })
-  const barChart = ChartMaster.createChart('bar', {
-    element: document.querySelector('#chart2'),
-    data: [
-      { label: 'Category A', value: 60 },
-      { label: 'Category B', value: 25 },
-      { label: 'Category C', value: -65 },
-      { label: 'Category D', value: 15 }
-    ],
-    options: {}
-  })
-  const lineChart = ChartMaster.createChart('line', {
-    element: document.querySelector('#chart3'),
-    data: [10, 5, 0, 90, 30, -10, 10],
-    options: {}
-  })
-  const polarChart = ChartMaster.createChart('polar', {
-    element: document.querySelector('#chart4'),
-    data: [
-      { label: 'Category A', value: 60, color: 'rgba(255, 99, 132, 0.6)' },
-      { label: 'Category B', value: 25, color: 'rgba(54, 162, 235, 0.6)' },
-      { label: 'Category C', value: 65, color: 'rgba(255, 206, 86, 0.6)' },
-      { label: 'Category D', value: 15, color: 'rgba(28, 120, 28, 0.6)' },
-      { label: 'Category E', value: 45, color: 'rgba(90, 50, 48, 0.6)' }
-    ],
-    options: {}
-  })
-  const radarChart = ChartMaster.createChart('radar', {
-    element: document.querySelector('#chart5'),
-    data: [
-      { label: 'Category A', value: 60 },
-      { label: 'Category B', value: 25 },
-      { label: 'Category C', value: 65 },
-      { label: 'Category D', value: 15 },
-      { label: 'Category E', value: 45 }
-    ]
-  })
-})
+// document.addEventListener('DOMContentLoaded', function () {
+//   const pieChart = ChartMaster.createChart('pie', {
+//     element: document.querySelector('#chart1'),
+//     data: [
+//       { label: 'Category A', value: 60, color: '#FF6384' },
+//       { label: 'Category B', value: 25, color: '#36A2EB' },
+//       { label: 'Category C', value: 65, color: '#FFCE56' },
+//       { label: 'Category D', value: 15, color: '#1c781c' }
+//     ],
+//     options: {
+//       borderWidth: 3,
+//       borderColor: '#ffffff'
+//     }
+//   })
+//   const barChart = ChartMaster.createChart('bar', {
+//     element: document.querySelector('#chart2'),
+//     data: [
+//       { label: 'Category A', value: 60 },
+//       { label: 'Category B', value: 25 },
+//       { label: 'Category C', value: -65 },
+//       { label: 'Category D', value: 15 }
+//     ],
+//     options: {}
+//   })
+//   const lineChart = ChartMaster.createChart('line', {
+//     element: document.querySelector('#chart3'),
+//     data: [10, 5, 0, 90, 30, -10, 10],
+//     options: {}
+//   })
+//   const polarChart = ChartMaster.createChart('polar', {
+//     element: document.querySelector('#chart4'),
+//     data: [
+//       { label: 'Category A', value: 60, color: 'rgba(255, 99, 132, 0.6)' },
+//       { label: 'Category B', value: 25, color: 'rgba(54, 162, 235, 0.6)' },
+//       { label: 'Category C', value: 65, color: 'rgba(255, 206, 86, 0.6)' },
+//       { label: 'Category D', value: 15, color: 'rgba(28, 120, 28, 0.6)' },
+//       { label: 'Category E', value: 45, color: 'rgba(90, 50, 48, 0.6)' }
+//     ],
+//     options: {}
+//   })
+//   const radarChart = ChartMaster.createChart('radar', {
+//     element: document.querySelector('#chart5'),
+//     data: [
+//       { label: 'Category A', value: 60 },
+//       { label: 'Category B', value: 25 },
+//       { label: 'Category C', value: 65 },
+//       { label: 'Category D', value: 15 },
+//       { label: 'Category E', value: 45 }
+//     ]
+//   })
+// })

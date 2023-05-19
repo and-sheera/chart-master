@@ -1,6 +1,30 @@
 class x {
-  constructor(i) {
-    this.element = i, i.chartMaster = this;
+  constructor(t) {
+    t && (this.element = t, t.chartMaster = this);
+  }
+  static createChart(t, s) {
+    switch (t) {
+      case "pie": {
+        new y(s);
+        break;
+      }
+      case "bar": {
+        new f(s);
+        break;
+      }
+      case "line": {
+        new T(s);
+        break;
+      }
+      case "polar": {
+        new v(s);
+        break;
+      }
+      case "radar":
+        return new g(s);
+      default:
+        console.error("This chart type was not found");
+    }
   }
   createLayout() {
     this.element.classList.add("chart-master"), this.element.classList.add(`chart-master--${this.cssModificator}`), this.chartWrapper = document.createElement("div"), this.chartWrapper.classList = "chart-master__wrapper", this.canvas = document.createElement("canvas"), this.chartWrapper.append(this.canvas), this.element.append(this.chartWrapper), this.ctx = this.canvas.getContext("2d");
@@ -16,19 +40,37 @@ class x {
   }
   setEvents() {
     this.options.iteraction && (this.canvas.addEventListener("mousemove", this.handleMouseMove.bind(this)), this.canvas.addEventListener("mouseleave", this.handleMouseLeave.bind(this))), window.addEventListener("resize", () => {
-      this.setMainParameters(), this.setSize(), this.drawChart();
+      this.setMainParameters(), this.setSize(), this.mainRender();
     });
   }
-  renderTooltip(i, t, s) {
-    this.tooltipElement ? this.tooltipElement.innerHTML = "" : (this.tooltipElement = document.createElement("div"), this.tooltipElement.classList.add("chart-master__tooltip")), this.tooltipElement.innerHTML = i.label ? `
-      <div class="chart-master__tooltip-label">${i.label}</div>
-      <div class="chart-master__tooltip-value">${i.value}</div>
+  renderTooltip(t, s, i) {
+    this.tooltipElement ? this.tooltipElement.innerHTML = "" : (this.tooltipElement = document.createElement("div"), this.tooltipElement.classList.add("chart-master__tooltip")), this.tooltipElement.innerHTML = t.label ? `
+      <div class="chart-master__tooltip-label">${t.label}</div>
+      <div class="chart-master__tooltip-value">${t.value}</div>
     ` : `
-      <div class="chart-master__tooltip-value">${i.value}</div>
-    `, this.tooltipElement.style.setProperty("--center-x", `${t}px`), this.tooltipElement.style.setProperty("--center-y", `${s}px`), this.chartWrapper.append(this.tooltipElement), this.tooltipElement.classList.add("active");
+      <div class="chart-master__tooltip-value">${t.value}</div>
+    `, this.tooltipElement.style.setProperty("--center-x", `${s}px`), this.tooltipElement.style.setProperty("--center-y", `${i}px`), this.chartWrapper.append(this.tooltipElement), this.tooltipElement.classList.add("active");
   }
   removeTooltip() {
     this.tooltipElement && this.tooltipElement.classList.remove("active");
+  }
+  drawLegend() {
+    if (!this.options.legend)
+      return;
+    this.legendElement || (this.legendElement = document.createElement("div"), this.legendElement.classList.add("chart-master__legend"), this.element.append(this.legendElement)), this.legendElement.innerHTML = "";
+    const t = document.createElement("ul");
+    t.classList.add("chart-master__legend-list"), this.legendElement.append(t);
+    for (const s of this.data) {
+      const i = document.createElement("li");
+      if (i.classList.add("chart-master__legend-item"), t.append(i), s.color) {
+        const a = document.createElement("span");
+        a.classList.add("chart-master__legend-color"), a.style.backgroundColor = s.color, i.append(a);
+      }
+      const e = document.createElement("span");
+      e.classList.add("chart-master__legend-label"), e.textContent = s.label, i.append(e);
+      const o = document.createElement("span");
+      o.classList.add("chart-master__legend-value"), o.textContent = this.params.totalValue === void 0 ? `${Number.parseFloat(s.value.toFixed(2))}` : `${Number.parseFloat((s.value / this.params.totalValue * 100).toFixed(2))}%`, i.append(o);
+    }
   }
   startAnimation() {
     this.animationStartTime = Date.now(), this.animationFrameId = requestAnimationFrame(this.animate.bind(this));
@@ -36,56 +78,310 @@ class x {
   stopAnimation() {
     cancelAnimationFrame(this.animationFrameId);
   }
-  interpolateColor(i, t, s) {
-    const e = this.hexToRGB(i), a = this.hexToRGB(t), o = e.map((h, r) => {
-      const d = (a[r] - h) * s;
-      return Math.floor(h + d);
-    });
-    return this.rgbToHex(o);
+  interpolateColor(t, s, i) {
+    const e = this.colorToRGBA(t), o = this.colorToRGBA(s);
+    return `rgba(${e.map((r, n) => {
+      if (n < 3) {
+        const d = (o[n] - r) * i;
+        return Math.round(r + d);
+      }
+      return r;
+    }).join(", ")})`;
   }
-  hexToRGB(i) {
-    const t = Number.parseInt(i.slice(1, 3), 16), s = Number.parseInt(i.slice(3, 5), 16), e = Number.parseInt(i.slice(5, 7), 16);
-    return [t, s, e];
+  lightenColor(t, s) {
+    return `rgba(${this.colorToRGBA(t).map((o, a) => {
+      if (a < 3) {
+        const r = Math.min(o + s, 255);
+        return Math.round(r);
+      }
+      return o;
+    }).join(", ")})`;
   }
-  rgbToHex(i) {
-    const [t, s, e] = i, a = t.toString(16).padStart(2, "0"), o = s.toString(16).padStart(2, "0"), h = e.toString(16).padStart(2, "0");
-    return `#${a}${o}${h}`;
+  colorToRGBA(t) {
+    if (t.startsWith("#"))
+      return this.hexToRGBA(t);
+    if (t.startsWith("rgba"))
+      return this.rgbaToRGBA(t);
+    if (t.startsWith("rgb"))
+      return this.rgbToRGBA(t);
   }
-  lightenColor(i) {
-    const s = this.hexToRGB(i).map((e) => Math.min(e + this.options.lightenValue, 255));
-    return this.rgbToHex(s);
+  hexToRGBA(t) {
+    const s = Number.parseInt(t.slice(1, 3), 16), i = Number.parseInt(t.slice(3, 5), 16), e = Number.parseInt(t.slice(5, 7), 16);
+    return [s, i, e, 1];
   }
-  update(i, t = {}) {
-    this.data = i, this.options = Object.assign({}, this.options, t), this.setMainParameters(), this.localUpdate(), this.mainRender();
+  rgbToRGBA(t) {
+    return [...t.substring(4, t.length - 1).split(",").map(Number), 1];
+  }
+  rgbaToRGBA(t) {
+    return t.substring(5, t.length - 1).split(",").map(Number);
+  }
+  update(t, s = {}) {
+    this.data = t, this.options = Object.assign({}, this.options, s), this.setMainParameters(), this.localUpdate(), this.mainRender();
   }
 }
-class p extends x {
-  constructor(i) {
-    super(i.element), this.data = i.data, this.options = Object.assign({}, p.defaultOptions, i.options), this.cssModificator = "bar", this.createLayout(), this.setMainParameters(), this.setBars(), this.setSize(), this.mainRender(), this.setEvents();
-  }
-  render() {
-    this.drawChart(), this.options.labelsX && this.renderLabelsX(), this.options.labelsY && this.renderLabelsY();
+class g extends x {
+  constructor(t) {
+    super(t.element), this.data = t.data, this.options = Object.assign({}, g.defaultOptions, t.options), this.cssModificator = "radar", this.createLayout(), this.setMainParameters(), this.setSize(), this.setDots(), this.setEvents(), this.mainRender();
   }
   setParameters() {
-    this.maxBarValue = Number.NEGATIVE_INFINITY, this.minBarValue = 0;
-    for (const i of this.data)
-      i.value > this.maxBarValue && (this.maxBarValue = i.value), i.value < this.minBarValue && (this.minBarValue = i.value);
+    this.params.centerX = this.params.width / 2, this.params.centerY = this.params.height / 2, this.params.radius = Math.min(this.params.width, this.params.height) / 2;
+  }
+  setDots() {
+    this.dots = [];
+    const t = Math.max(...this.data.map((e) => e.value));
+    let s = (90 - 360 / this.data.length / 2) * Math.PI / 180;
+    const i = 2 * Math.PI / this.data.length;
+    for (const [e, o] of this.data.entries()) {
+      const a = o.value / t * this.params.radius, r = this.params.centerX + a * Math.cos(s), n = this.params.centerY + a * Math.sin(s);
+      s += i, this.dots.push({
+        x: r,
+        y: n,
+        value: o.value
+      });
+    }
+  }
+  render() {
+    this.drawChart(), this.options.labels && this.renderLabels(), this.options.dots && this.drawsDots();
+  }
+  drawChart() {
+    const {
+      canvas: t,
+      ctx: s,
+      data: i,
+      options: e,
+      params: o,
+      dots: a
+    } = this, r = t.width / 2, n = t.height / 2, l = (90 - 360 / i.length / 2) * Math.PI / 180, d = 2 * Math.PI / i.length;
+    s.strokeStyle = e.axesColor, s.lineWidth = e.axesLineWidth;
+    let c = l;
+    for (let m = 0; m < i.length; m++) {
+      const p = r + o.radius * Math.cos(c), b = n + o.radius * Math.sin(c);
+      s.beginPath(), s.moveTo(r, n), s.lineTo(p, b), s.closePath(), s.stroke(), c += d;
+    }
+    const u = Math.max(...i.map((m) => m.value));
+    s.strokeStyle = "#676767", s.lineWidth = 1, s.beginPath();
+    for (let m = 0; m < e.splitSections; m++) {
+      const p = u / (e.splitSections - 1) * m / u * o.radius;
+      c = l;
+      for (const [b, M] of i.entries()) {
+        const C = r + p * Math.cos(c), S = n + p * Math.sin(c);
+        b === 0 ? s.moveTo(C, S) : (s.lineTo(C, S), b === i.length - 1 && s.lineTo(r + p * Math.cos(l), n + p * Math.sin(l))), c += d;
+      }
+    }
+    s.closePath(), s.stroke(), s.strokeStyle = e.gridColor, s.lineWidth = e.gridLineWidth, s.beginPath();
+    for (const [m, p] of a.entries())
+      m === 0 ? s.moveTo(p.x, p.y) : s.lineTo(p.x, p.y);
+    s.closePath(), s.stroke(), s.fillStyle = e.bgSectionColor, s.fill();
+  }
+  renderLabels() {
+    this.lablesElement ? this.lablesElement.innerHTML = "" : (this.lablesElement = document.createElement("div"), this.lablesElement.classList.add("chart-master__labels"));
+    let t = (90 - 360 / this.data.length / 2) * Math.PI / 180;
+    const s = 2 * Math.PI / this.data.length;
+    for (let i = 0; i < this.data.length; i++) {
+      const e = this.params.centerX + (this.params.radius + this.options.labelOffset) * Math.cos(t), o = this.params.centerY + (this.params.radius + this.options.labelOffset) * Math.sin(t), a = document.createElement("div");
+      a.classList.add("chart-master__label"), a.style.setProperty("--angle", `${t * 180 / Math.PI}deg`), a.style.setProperty("--x", `${e}px`), a.style.setProperty("--y", `${o}px`), this.lablesElement.append(a), a.textContent = this.data[i].label, t += s;
+    }
+    this.chartWrapper.append(this.lablesElement);
+  }
+  drawsDots() {
+    for (const t of this.dots)
+      this.ctx.fillStyle = this.options.dotColor, this.options.dotBorderWidth && (this.ctx.lineWidth = this.options.dotBorderWidth, this.ctx.strokeStyle = this.options.dotBorderColor), this.ctx.beginPath(), this.ctx.arc(t.x, t.y, 4, 0, 2 * Math.PI), this.ctx.stroke(), this.ctx.fill();
+  }
+  handleMouseMove(t) {
+    const s = this.canvas.getBoundingClientRect(), i = t.clientX - s.left, e = t.clientY - s.top;
+    for (const [o, a] of this.dots.entries())
+      if (i >= a.x - this.options.dotRadius - this.options.iteractionAdditionalRadius && i <= a.x + (this.options.dotRadius + this.options.iteractionAdditionalRadius) * 2 && e >= a.y - this.options.dotRadius - this.options.iteractionAdditionalRadius && e <= a.y + (this.options.dotRadius + this.options.iteractionAdditionalRadius) * 2) {
+        this.hoveredDotIndex = o;
+        break;
+      } else
+        this.hoveredDotIndex = void 0;
+    if (this.hoveredDotIndex === void 0)
+      this.backChartState();
+    else if (this.hoveredDotIndex !== this.prevHoveredDotIndex && (this.prevHoveredDotIndex = this.hoveredDotIndex, this.options.onDotHover && typeof this.options.onDotHover == "function" && this.options.onDotHover({
+      index: this.hoveredDotIndex,
+      value: this.dots[this.hoveredDotIndex].value
+    }), this.options.tooltip)) {
+      const o = {
+        value: this.dots[this.hoveredDotIndex].value,
+        label: this.options.tooltipLabel
+      }, a = this.dots[this.hoveredDotIndex].x, r = this.dots[this.hoveredDotIndex].y;
+      this.removeTooltip(), this.renderTooltip(o, a, r);
+    }
+  }
+  backChartState() {
+    this.options.tooltip && this.removeTooltip(), this.hoveredDotIndex = void 0, this.prevHoveredDotIndex = void 0;
+  }
+  handleMouseLeave() {
+    this.backChartState();
+  }
+  localUpdate() {
+  }
+}
+g.defaultOptions = {
+  gridLineWidth: 1,
+  gridColor: "#565656",
+  axesLineWidth: 1,
+  axesColor: "#000000",
+  splitSections: 8,
+  labelOffset: 20,
+  labels: !0,
+  lineWidth: 2,
+  colorTransitionDuration: 200,
+  bgSectionColor: "rgba(240, 55, 55, 0.4)",
+  tooltip: !0,
+  dots: !0,
+  dotColor: "#ffffff",
+  dotRadius: 3,
+  dotBorderWidth: 2,
+  dotBorderColor: "#000000",
+  iteraction: !0,
+  iteractionAdditionalRadius: 5,
+  colorTransitionTimingFunction: function(h) {
+    return h < 0.5 ? 2 * h * h : 1 - Math.pow(-2 * h + 2, 2) / 2;
+  }
+};
+class v extends x {
+  constructor(t) {
+    super(t.element), this.data = t.data, this.options = Object.assign({}, v.defaultOptions, t.options), this.cssModificator = "polar", this.createLayout(), this.setMainParameters(), this.setSize(), this.setEvents(), this.setSectors(), this.mainRender();
+  }
+  setSectors() {
+    this.sectors = [];
+    let t = 0;
+    const i = (2 * Math.PI - this.options.sectorGaps * (this.data.length - 1) * Math.PI / 180) / this.data.length;
+    for (const e of this.data)
+      this.sectors.push({
+        color: e.color,
+        hoverColor: e.hoverColor || this.lightenColor(e.color, this.options.lightenValue),
+        currentColor: e.color,
+        value: e.value,
+        label: e.label,
+        radius: e.value / this.params.maxValue * this.params.radius,
+        startAngle: t,
+        endAngle: t + i
+      }), t += i + this.options.sectorGaps * Math.PI / 180;
+  }
+  setParameters() {
+    this.params.totalValue = this.data.reduce((t, s) => t + s.value, 0), this.params.maxValue = Math.max(...this.data.map((t) => t.value)), this.params.padding = this.options.padding + this.options.borderWidth, this.params.radius = Math.min(this.params.width, this.params.height) / 2 - this.params.padding, this.params.centerX = this.params.width / 2, this.params.centerY = this.params.height / 2;
+  }
+  render() {
+    this.drawGrid(), this.drawChart(), this.options.legend && this.drawLegend(), this.options.labels && this.renderLabels();
+  }
+  drawGrid() {
+    for (let t = 0; t < this.options.rings; t++) {
+      const s = this.params.radius * ((t + 1) / this.options.rings);
+      this.drawRing(s);
+    }
+  }
+  renderLabels() {
+    this.lablesElement ? this.lablesElement.innerHTML = "" : (this.lablesElement = document.createElement("div"), this.lablesElement.classList.add("chart-master__labels"), this.chartWrapper.append(this.lablesElement));
+    const t = this.params.maxValue / (this.options.rings - 1);
+    for (let s = 0; s < this.options.rings; s++) {
+      const i = this.params.radius * ((s + 1) / this.options.rings);
+      this.lablesElement.append(this.renderLabel(i, s * t));
+    }
+  }
+  drawRing(t) {
+    this.ctx.beginPath(), this.ctx.arc(this.params.centerX, this.params.centerY, t, 0, 2 * Math.PI), this.ctx.strokeStyle = this.options.gridColor, this.ctx.lineWidth = this.options.gridLineWidth, this.ctx.stroke(), this.ctx.closePath();
+  }
+  renderLabel(t, s) {
+    const i = this.options.axisLabelAngle * Math.PI / 180, e = this.params.centerX + t * Math.cos(i), o = this.params.centerY + t * Math.sin(i), a = document.createElement("div");
+    return a.classList.add("chart-master__label"), a.textContent = Math.floor(s), a.style.setProperty("--x", `${e}px`), a.style.setProperty("--y", `${o}px`), a;
+  }
+  drawChart() {
+    for (const t of this.sectors)
+      this.drawSector(t.startAngle, t.endAngle, t.currentColor, t.radius);
+  }
+  drawSector(t, s, i, e) {
+    this.ctx.beginPath(), this.ctx.moveTo(this.params.centerX, this.params.centerY), this.ctx.arc(this.params.centerX, this.params.centerY, e, t, s), this.ctx.closePath(), this.ctx.fillStyle = i, this.ctx.fill(), this.options.borderWidth > 0 && (this.ctx.strokeStyle = this.options.borderColor, this.ctx.lineWidth = this.options.borderWidth, this.ctx.stroke());
+  }
+  handleMouseMove(t) {
+    const {
+      offsetX: s,
+      offsetY: i
+    } = t, e = s - this.params.centerX, o = i - this.params.centerY, a = Math.sqrt(e * e + o * o);
+    let r = Math.atan2(o, e);
+    r < 0 && (r += 2 * Math.PI);
+    const n = this.sectors.findIndex((l) => r > l.startAngle && r < l.endAngle && a < l.radius);
+    if (n === -1)
+      this.backChartState();
+    else if (this.hoverSector !== n) {
+      if (this.options.onSectortHover && typeof this.options.onSectortHover == "function" && this.options.onSectortHover({
+        index: n,
+        label: this.sectors[n].label,
+        value: this.sectors[n].value / this.params.totalValue * 100,
+        rawValue: this.sectors[n].value
+      }), this.backChartState(), this.hoverSector = n, this.hoveredSectorColor = this.sectors[n].hoverColor, this.options.tooltip) {
+        const l = {
+          label: this.sectors[n].label,
+          value: `${Number.parseFloat((this.sectors[n].value / this.params.totalValue * 100).toFixed(2))}%`
+        }, d = (this.sectors[n].startAngle + this.sectors[n].endAngle) / 2, c = this.params.centerX + this.sectors[n].radius / 2 * Math.cos(d), u = this.params.centerY + this.sectors[n].radius / 2 * Math.sin(d);
+        this.removeTooltip(), this.renderTooltip(l, c, u);
+      }
+      this.startAnimation();
+    }
+  }
+  handleMouseLeave() {
+    this.backChartState();
+  }
+  backChartState() {
+    this.stopAnimation(), this.options.tooltip && this.removeTooltip(), this.hoverSector !== void 0 && (this.sectors[this.hoverSector].currentColor = this.sectors[this.hoverSector].color), this.hoverSector = void 0, this.mainRender();
+  }
+  animate() {
+    if (this.hoverSector !== void 0) {
+      const s = Date.now() - this.animationStartTime, i = Math.min(s / this.options.colorTransitionDuration, 1), e = this.options.colorTransitionTimingFunction(i);
+      this.sectors[this.hoverSector].currentColor = this.interpolateColor(this.sectors[this.hoverSector].color, this.sectors[this.hoverSector].hoverColor, e), this.mainRender(), i < 1 && (this.animationFrameId = requestAnimationFrame(this.animate.bind(this)));
+    }
+  }
+  localUpdate() {
+    this.setSectors();
+  }
+}
+v.defaultOptions = {
+  borderWidth: 0,
+  borderColor: "#000000",
+  padding: 0,
+  legend: !0,
+  lightenValue: 50,
+  tooltip: !0,
+  labels: !0,
+  iteraction: !0,
+  rings: 10,
+  sectorGaps: 0,
+  gridColor: "#cecece",
+  gridLineWidth: 1,
+  axisLabelAngle: -90,
+  colorTransitionTimingFunction: function(h) {
+    return h < 0.5 ? 2 * h * h : 1 - Math.pow(-2 * h + 2, 2) / 2;
+  },
+  colorTransitionDuration: 200
+};
+class f extends x {
+  constructor(t) {
+    super(t.element), this.data = t.data, this.options = Object.assign({}, f.defaultOptions, t.options), this.cssModificator = "bar", this.createLayout(), this.setMainParameters(), this.mainRender(), this.setEvents();
+  }
+  render() {
+    this.setBars(), this.setSize(), this.drawChart(), this.drawLegend(), this.options.labelsX && this.renderLabelsX(), this.options.labelsY && this.renderLabelsY();
+  }
+  setParameters() {
+    this.maxBarValue = 0, this.minBarValue = 0;
+    for (const t of this.data)
+      t.value > this.maxBarValue && (this.maxBarValue = t.value), t.value < this.minBarValue && (this.minBarValue = t.value);
     this.unitToPx = this.params.height / (Math.abs(this.minBarValue) + this.maxBarValue + this.options.paddingTop + this.options.paddingBottom);
   }
   setBars() {
     this.bars = [];
-    const i = this.data.length * this.options.barWidth + (this.data.length - 1) * this.options.barSpacing;
-    let s = (this.params.width - i) / 2;
+    const t = this.data.length * this.options.barWidth + (this.data.length - 1) * this.options.barSpacing;
+    let i = (this.params.width - t) / 2;
     for (const e of this.data) {
-      const a = Math.abs(e.value) * this.unitToPx, o = e.value > 0 ? (this.maxBarValue + this.options.paddingTop - e.value) * this.unitToPx + 0.5 : (this.maxBarValue + this.options.paddingTop) * this.unitToPx + 0.5;
+      const o = Math.abs(e.value) * this.unitToPx, a = e.value > 0 ? (this.maxBarValue + this.options.paddingTop - e.value) * this.unitToPx + 0.5 : (this.maxBarValue + this.options.paddingTop) * this.unitToPx + 0.5;
       this.bars.push({
         value: e.value,
         label: e.label,
-        x: s,
-        y: o,
-        height: a,
+        x: i,
+        y: a,
+        height: o,
         width: this.options.barWidth
-      }), s += this.options.barSpacing + this.options.barWidth;
+      }), i += this.options.barSpacing + this.options.barWidth;
     }
   }
   drawChart() {
@@ -95,72 +391,66 @@ class p extends x {
     this.options.gridY && this.drawGridY(), this.options.gridX && this.drawGridX();
   }
   drawGridY() {
-    const i = Math.floor((Math.abs(this.minBarValue) + this.maxBarValue + this.options.paddingTop + this.options.paddingBottom) / this.options.yAxisSplitNumber);
+    const t = Math.floor((Math.abs(this.minBarValue) + this.maxBarValue + this.options.paddingTop + this.options.paddingBottom) / this.options.yAxisSplitNumber);
     this.ctx.strokeStyle = this.options.gridYColor, this.ctx.lineWidth = this.options.gridYWidth, this.ctx.textAlign = "right", this.ctx.beginPath(), this.ctx.moveTo(0, (this.maxBarValue + this.options.paddingTop) * this.unitToPx + 0.5), this.ctx.lineTo(this.params.width, (this.maxBarValue + this.options.paddingTop) * this.unitToPx + 0.5);
-    for (let t = this.maxBarValue + this.options.paddingTop - i; t > 0; t -= i)
-      this.ctx.moveTo(0, t * this.unitToPx + 0.5), this.ctx.lineTo(this.params.width, t * this.unitToPx + 0.5);
-    for (let t = this.maxBarValue + this.options.paddingTop + i; t < Math.abs(this.minBarValue) + this.maxBarValue + this.options.paddingTop; t += i)
-      this.ctx.moveTo(0, t * this.unitToPx + 0.5), this.ctx.lineTo(this.params.width, t * this.unitToPx + 0.5);
+    for (let s = this.maxBarValue + this.options.paddingTop - t; s > 0; s -= t)
+      this.ctx.moveTo(0, s * this.unitToPx + 0.5), this.ctx.lineTo(this.params.width, s * this.unitToPx + 0.5);
+    for (let s = this.maxBarValue + this.options.paddingTop + t; s < Math.abs(this.minBarValue) + this.maxBarValue + this.options.paddingTop; s += t)
+      this.ctx.moveTo(0, s * this.unitToPx + 0.5), this.ctx.lineTo(this.params.width, s * this.unitToPx + 0.5);
     this.ctx.stroke();
   }
   drawGridX() {
     this.ctx.strokeStyle = this.options.gridXColor, this.ctx.lineWidth = this.options.gridYWidth, this.ctx.beginPath();
-    const i = this.data.length * this.options.barWidth + (this.data.length - 1) * this.options.barSpacing;
-    let s = (this.params.width - i) / 2 - this.options.barSpacing / 2;
+    const t = this.data.length * this.options.barWidth + (this.data.length - 1) * this.options.barSpacing;
+    let i = (this.params.width - t) / 2 - this.options.barSpacing / 2;
     for (let e = 0; e < this.data.length + 1; e++)
-      this.ctx.moveTo(s, 0), this.ctx.lineTo(s, this.params.height), s += this.options.barSpacing + this.options.barWidth;
+      this.ctx.moveTo(i, 0), this.ctx.lineTo(i, this.params.height), i += this.options.barSpacing + this.options.barWidth;
     this.ctx.stroke();
   }
   drawBars() {
-    for (const [i, t] of this.bars.entries())
-      this.ctx.fillStyle = i === this.hoveredBarIndex ? this.hoveredBarColor : this.options.barColor, this.ctx.fillRect(t.x, t.y, this.options.barWidth, t.height), this.options.barBorderWidth !== 0 && (this.ctx.strokeStyle = this.options.barBorderColor, this.ctx.lineWidth = this.options.barBorderWidth, this.ctx.strokeRect(t.x, t.y, this.options.barWidth, t.height));
+    for (const [t, s] of this.bars.entries())
+      this.ctx.fillStyle = t === this.hoveredBarIndex ? this.hoveredBarColor : this.options.barColor, this.ctx.beginPath(), this.ctx.roundRect(s.x, s.y, this.options.barWidth, s.height, this.options.barBorderRadius), this.ctx.fill(), this.options.barBorderWidth !== 0 && (this.ctx.strokeStyle = this.options.barBorderColor, this.ctx.lineWidth = this.options.barBorderWidth, this.ctx.strokeRect(s.x, s.y, this.options.barWidth, s.height), this.ctx.stroke());
   }
   renderLabelsY() {
     this.lablesYElement ? this.lablesYElement.innerHTML = "" : (this.lablesYElement = document.createElement("div"), this.lablesYElement.classList.add("chart-master__labels"), this.lablesYElement.classList.add("chart-master__labels--y"), this.chartWrapper.classList.add("chart-master__wrapper--pl")), this.labelsY = [], this.labelsY.push({
       value: 0,
       yCoord: (this.maxBarValue + this.options.paddingTop) * this.unitToPx
     });
-    const i = Math.floor((Math.abs(this.minBarValue) + this.maxBarValue + this.options.paddingTop + this.options.paddingBottom) / this.options.yAxisSplitNumber);
-    let t = i;
-    for (let s = this.maxBarValue + this.options.paddingTop - i; s > 0; s -= i)
+    const t = Math.floor((Math.abs(this.minBarValue) + this.maxBarValue + this.options.paddingTop + this.options.paddingBottom) / this.options.yAxisSplitNumber);
+    let s = t;
+    for (let i = this.maxBarValue + this.options.paddingTop - t; i > 0; i -= t)
       this.labelsY.unshift({
-        value: t,
-        yCoord: s * this.unitToPx
-      }), t += i;
-    t = -i;
-    for (let s = this.maxBarValue + this.options.paddingTop + i; s < Math.abs(this.minBarValue) + this.maxBarValue + this.options.paddingTop; s += i)
+        value: s,
+        yCoord: i * this.unitToPx
+      }), s += t;
+    s = -t;
+    for (let i = this.maxBarValue + this.options.paddingTop + t; i < Math.abs(this.minBarValue) + this.maxBarValue + this.options.paddingTop; i += t)
       this.labelsY.push({
-        value: t,
-        yCoord: s * this.unitToPx
-      }), t -= i;
-    for (const s of this.labelsY) {
+        value: s,
+        yCoord: i * this.unitToPx
+      }), s -= t;
+    for (const i of this.labelsY) {
       const e = document.createElement("div");
-      e.classList.add("chart-master__label"), e.textContent = s.value, e.style.setProperty("--y", `${s.yCoord}px`), this.lablesYElement.append(e);
+      e.classList.add("chart-master__label"), e.textContent = i.value, e.style.setProperty("--y", `${i.yCoord}px`), this.lablesYElement.append(e);
     }
     this.chartWrapper.append(this.lablesYElement);
   }
   renderLabelsX() {
     this.lablesXElement ? this.lablesXElement.innerHTML = "" : (this.lablesXElement = document.createElement("div"), this.lablesXElement.classList.add("chart-master__labels"), this.lablesXElement.classList.add("chart-master__labels--x"), this.chartWrapper.classList.add("chart-master__wrapper--pb")), this.labelsX = [];
-    for (const i of this.bars)
+    for (const t of this.bars)
       this.labelsX.push({
-        label: i.label,
-        xCoord: i.x + this.options.barWidth / 2
+        label: t.label,
+        xCoord: t.x + this.options.barWidth / 2
       });
-    for (const i of this.labelsX) {
-      const t = document.createElement("div");
-      t.classList.add("chart-master__label"), t.textContent = i.label, t.style.setProperty("--x", `${i.xCoord}px`), this.lablesXElement.append(t);
+    for (const t of this.labelsX) {
+      const s = document.createElement("div");
+      s.classList.add("chart-master__label"), s.textContent = t.label, s.style.setProperty("--x", `${t.xCoord}px`), this.lablesXElement.append(s);
     }
     this.chartWrapper.append(this.lablesXElement);
   }
-  handleMouseMove(i) {
-    const t = this.canvas.getBoundingClientRect(), s = i.clientX - t.left, e = i.clientY - t.top;
-    for (const [a, o] of this.bars.entries())
-      if (s >= o.x && s <= o.x + o.width && e >= o.y && e <= o.y + o.height) {
-        this.hoveredBarIndex = a;
-        break;
-      } else
-        this.hoveredBarIndex = void 0;
-    if (this.hoveredBarIndex === void 0)
+  handleMouseMove(t) {
+    const s = this.canvas.getBoundingClientRect(), i = t.clientX - s.left, e = t.clientY - s.top;
+    if (this.hoveredBarIndex = this.options.barBorderRadius === 0 ? this.checkHoverRect(i, e) : this.checkHoverWithCorner(i, e), this.hoveredBarIndex === void 0)
       this.backChartState();
     else if (this.hoveredBarIndex !== this.prevHoveredBarIndex) {
       if (this.prevHoveredBarIndex = this.hoveredBarIndex, this.options.onBarHover && typeof this.options.onBarHover == "function" && this.options.onBarHover({
@@ -168,22 +458,42 @@ class p extends x {
         label: this.bars[this.hoveredBarIndex].label,
         value: this.bars[this.hoveredBarIndex].value
       }), this.options.tooltip) {
-        const a = {
+        const o = {
           label: this.bars[this.hoveredBarIndex].label,
           value: this.bars[this.hoveredBarIndex].value
-        }, o = this.bars[this.hoveredBarIndex].x + this.options.barWidth / 2, h = this.bars[this.hoveredBarIndex].y + this.bars[this.hoveredBarIndex].height / 2;
-        this.removeTooltip(), this.renderTooltip(a, o, h);
+        }, a = this.bars[this.hoveredBarIndex].x + this.options.barWidth / 2, r = this.bars[this.hoveredBarIndex].y + this.bars[this.hoveredBarIndex].height / 2;
+        this.removeTooltip(), this.renderTooltip(o, a, r);
       }
       this.startAnimation();
     }
+  }
+  checkHoverWithCorner(t, s) {
+    const i = document.createElement("canvas");
+    i.width = this.params.width, i.height = this.params.height;
+    const e = i.getContext("2d");
+    for (let o = 0; o < this.bars.length; o++) {
+      const a = this.bars[o], {
+        x: r,
+        y: n,
+        width: l,
+        height: d
+      } = a;
+      if (e.clearRect(0, 0, i.width, i.height), e.beginPath(), e.moveTo(r + this.options.barBorderRadius, n), e.lineTo(r + l - this.options.barBorderRadius, n), e.arcTo(r + l, n, r + l, n + this.options.barBorderRadius, this.options.barBorderRadius), e.lineTo(r + l, n + d - this.options.barBorderRadius), e.arcTo(r + l, n + d, r + l - this.options.barBorderRadius, n + d, this.options.barBorderRadius), e.lineTo(r + this.options.barBorderRadius, n + d), e.arcTo(r, n + d, r, n + d - this.options.barBorderRadius, this.options.barBorderRadius), e.lineTo(r, n + this.options.barBorderRadius), e.arcTo(r, n, r + this.options.barBorderRadius, n, this.options.barBorderRadius), e.closePath(), e.isPointInPath(t, s))
+        return o;
+    }
+  }
+  checkHoverRect(t, s) {
+    for (const [i, e] of this.bars.entries())
+      if (t >= e.x && t <= e.x + e.width && s >= e.y && s <= e.y + e.height)
+        return i;
   }
   handleMouseLeave() {
     this.backChartState();
   }
   animate() {
     if (this.hoveredBarIndex !== void 0) {
-      const t = Date.now() - this.animationStartTime, s = Math.min(t / this.options.colorTransitionDuration, 1), e = this.options.colorTransitionTimingFunction(s);
-      this.hoveredBarColor = this.interpolateColor(this.options.barColor, this.options.hoverBarColor || this.lightenColor(this.options.barColor), e), this.drawBars(), s < 1 && (this.animationFrameId = requestAnimationFrame(this.animate.bind(this)));
+      const s = Date.now() - this.animationStartTime, i = Math.min(s / this.options.colorTransitionDuration, 1), e = this.options.colorTransitionTimingFunction(i);
+      this.hoveredBarColor = this.interpolateColor(this.options.barColor, this.options.hoverBarColor || this.lightenColor(this.options.barColor, this.options.lightenValue), e), this.drawBars(), i < 1 && (this.animationFrameId = requestAnimationFrame(this.animate.bind(this)));
     }
   }
   backChartState() {
@@ -193,7 +503,7 @@ class p extends x {
     this.setBars();
   }
 }
-p.defaultOptions = {
+f.defaultOptions = {
   gridYColor: "#d4d4d4",
   gridXColor: "#d4d4d4",
   gridYWidth: 1,
@@ -203,9 +513,11 @@ p.defaultOptions = {
   barBorderWidth: 0,
   barWidth: 50,
   barSpacing: 30,
+  barBorderRadius: 0,
   yAxisSplitNumber: 10,
   paddingTop: 2,
   paddingBottom: 2,
+  legend: !0,
   labelsX: !0,
   labelsY: !0,
   gridX: !0,
@@ -213,24 +525,23 @@ p.defaultOptions = {
   iteraction: !0,
   lightenValue: 50,
   tooltip: !0,
-  colorTransitionTimingFunction: function(n) {
-    return n < 0.5 ? 2 * n * n : 1 - Math.pow(-2 * n + 2, 2) / 2;
+  colorTransitionTimingFunction: function(h) {
+    return h < 0.5 ? 2 * h * h : 1 - Math.pow(-2 * h + 2, 2) / 2;
   },
   colorTransitionDuration: 200
-  // onBarHover
 };
-class c extends x {
-  constructor(i) {
-    super(i.element), this.data = i.data, this.options = Object.assign({}, c.defaultOptions, i.options), this.cssModificator = "line", this.createLayout(), this.setMainParameters(), this.setSize(), this.setDots(), this.mainRender(), this.setEvents();
+class T extends x {
+  constructor(t) {
+    super(t.element), this.data = t.data, this.options = Object.assign({}, T.defaultOptions, t.options), this.cssModificator = "line", this.createLayout(), this.setMainParameters(), this.setSize(), this.mainRender(), this.setEvents();
   }
   setDots() {
     this.dots = [];
-    const i = (this.params.width - 2 * this.options.padding) / (this.data.length - 1), t = (this.params.height - 2 * this.options.padding) / (Math.max(...this.data) - Math.min(...this.data));
-    for (const [s, e] of this.data.entries()) {
-      const a = this.options.padding + s * i, o = this.params.height - this.options.padding - (e - Math.min(...this.data)) * t;
+    const t = (this.params.width - 2 * this.options.padding) / (this.data.length - 1), s = (this.params.height - 2 * this.options.padding) / (Math.max(...this.data) - Math.min(...this.data));
+    for (const [i, e] of this.data.entries()) {
+      const o = this.options.padding + i * t, a = this.params.height - this.options.padding - (e - Math.min(...this.data)) * s;
       this.dots.push({
-        x: a,
-        y: o,
+        x: o,
+        y: a,
         value: e
       });
     }
@@ -241,19 +552,19 @@ class c extends x {
   drawAxes() {
     if (this.ctx.beginPath(), this.options.gridX) {
       this.ctx.lineWidth = this.options.axisXWidth, this.ctx.strokeStyle = this.options.axisXColor, this.ctx.moveTo(this.options.padding, this.params.height - this.options.padding), this.ctx.lineTo(this.params.width - this.options.padding, this.params.height - this.options.padding), this.ctx.strokeStyle = this.options.axisXTickColor, this.ctx.lineWidth = this.options.axisXTickWidth;
-      const i = (this.params.width - 2 * this.options.padding) / (this.data.length - 1);
-      for (let t = 0; t < this.data.length; t++) {
-        const s = this.options.padding + t * i;
-        this.ctx.moveTo(s, this.params.height - this.options.padding - this.options.axisXTickLength / 2), this.ctx.lineTo(s, this.params.height - this.options.padding + this.options.axisXTickLength / 2), this.ctx.fillText(t.toString(), s - 4, this.params.height - this.options.padding + 20);
+      const t = (this.params.width - 2 * this.options.padding) / (this.data.length - 1);
+      for (let s = 0; s < this.data.length; s++) {
+        const i = this.options.padding + s * t;
+        this.ctx.moveTo(i, this.params.height - this.options.padding - this.options.axisXTickLength / 2), this.ctx.lineTo(i, this.params.height - this.options.padding + this.options.axisXTickLength / 2);
       }
     }
     if (this.options.gridY) {
       this.ctx.lineWidth = this.options.axisYWidth, this.ctx.strokeStyle = this.options.axisYColor, this.ctx.moveTo(this.options.padding, this.options.padding), this.ctx.lineTo(this.options.padding, this.params.height - this.options.padding);
-      const i = (this.params.height - 2 * this.options.padding) / this.options.yAxisSplitNumber;
+      const t = (this.params.height - 2 * this.options.padding) / this.options.yAxisSplitNumber;
       this.ctx.strokeStyle = this.options.axisYTickColor, this.ctx.lineWidth = this.options.axisYTickWidth;
-      for (let t = 0; t <= this.options.yAxisSplitNumber; t++) {
-        const s = this.params.height - this.options.padding - t * i;
-        this.ctx.moveTo(this.options.padding - this.options.axisYTickLength / 2, s), this.ctx.lineTo(this.options.padding + this.options.axisYTickLength / 2, s);
+      for (let s = 0; s <= this.options.yAxisSplitNumber; s++) {
+        const i = this.params.height - this.options.padding - s * t;
+        this.ctx.moveTo(this.options.padding - this.options.axisYTickLength / 2, i), this.ctx.lineTo(this.options.padding + this.options.axisYTickLength / 2, i);
       }
     }
     this.ctx.stroke();
@@ -261,18 +572,18 @@ class c extends x {
   drawGrid() {
     if (this.ctx.beginPath(), this.options.gridY) {
       this.ctx.lineWidth = this.options.gridXWidth, this.ctx.strokeStyle = this.options.gridXColor;
-      const i = (this.params.height - 2 * this.options.padding) / this.options.yAxisSplitNumber;
-      for (let t = 0; t <= this.options.yAxisSplitNumber; t++) {
-        const s = this.params.height - this.options.padding - t * i;
-        this.ctx.moveTo(this.options.padding, s), this.ctx.lineTo(this.params.width - this.options.padding, s);
+      const t = (this.params.height - 2 * this.options.padding) / this.options.yAxisSplitNumber;
+      for (let s = 0; s <= this.options.yAxisSplitNumber; s++) {
+        const i = this.params.height - this.options.padding - s * t;
+        this.ctx.moveTo(this.options.padding, i), this.ctx.lineTo(this.params.width - this.options.padding, i);
       }
     }
     if (this.options.gridX) {
       this.ctx.lineWidth = this.options.gridYWidth, this.ctx.strokeStyle = this.options.gridYColor;
-      const i = (this.params.width - 2 * this.options.padding) / (this.data.length - 1);
-      for (let t = 0; t < this.data.length; t++) {
-        const s = this.options.padding + t * i;
-        this.ctx.moveTo(s, this.options.padding), this.ctx.lineTo(s, this.params.height - this.options.padding);
+      const t = (this.params.width - 2 * this.options.padding) / (this.data.length - 1);
+      for (let s = 0; s < this.data.length; s++) {
+        const i = this.options.padding + s * t;
+        this.ctx.moveTo(i, this.options.padding), this.ctx.lineTo(i, this.params.height - this.options.padding);
       }
     }
     this.ctx.stroke();
@@ -281,69 +592,62 @@ class c extends x {
     this.ctx.beginPath(), this.ctx.strokeStyle = this.options.lineColor, this.ctx.lineWidth = this.options.lineWidth, this.options.interpolation ? this.drawInterpolationLine() : this.drawLine();
   }
   drawLine() {
-    for (const [i, t] of this.dots.entries())
-      i === 0 ? this.ctx.moveTo(t.x, t.y) : this.ctx.lineTo(t.x, t.y);
+    for (const [t, s] of this.dots.entries())
+      t === 0 ? this.ctx.moveTo(s.x, s.y) : this.ctx.lineTo(s.x, s.y);
     this.ctx.stroke();
   }
   drawInterpolationLine() {
-    for (let i = 0; i < this.dots.length - 1; i++) {
-      const t = this.dots[i], s = this.dots[i + 1], e = t.x + (s.x - t.x) / 3 * this.options.tensionCoeff, a = t.y, o = s.x - (s.x - t.x) / 3 * this.options.tensionCoeff, h = s.y;
-      this.ctx.moveTo(t.x, t.y), this.ctx.bezierCurveTo(e, a, o, h, s.x, s.y);
+    for (let t = 0; t < this.dots.length - 1; t++) {
+      const s = this.dots[t], i = this.dots[t + 1], e = s.x + (i.x - s.x) / 3 * this.options.tensionCoeff, o = s.y, a = i.x - (i.x - s.x) / 3 * this.options.tensionCoeff, r = i.y;
+      this.ctx.moveTo(s.x, s.y), this.ctx.bezierCurveTo(e, o, a, r, i.x, i.y);
     }
     this.ctx.stroke();
   }
   drawsDots() {
-    for (const i of this.dots)
-      this.ctx.fillStyle = this.options.dotColor, this.options.dotBorderWidth && (this.ctx.lineWidth = this.options.dotBorderWidth, this.ctx.strokeStyle = this.options.dotBorderColor), this.ctx.beginPath(), this.ctx.arc(i.x, i.y, 4, 0, 2 * Math.PI), this.ctx.stroke(), this.ctx.fill();
-  }
-  calculatePoints() {
-    const i = this.data.length, t = (this.params.width - this.options.padding * 2) / (i - 1), s = Math.max(...this.data) - Math.min(...this.data), e = (this.params.height - this.options.padding * 2) / s;
-    return this.data.map((a, o) => ({
-      x: this.options.padding + o * t,
-      y: this.params.height - this.options.padding - (a - Math.min(...this.data)) * e
-    }));
+    for (const t of this.dots)
+      this.ctx.fillStyle = this.options.dotColor, this.options.dotBorderWidth && (this.ctx.lineWidth = this.options.dotBorderWidth, this.ctx.strokeStyle = this.options.dotBorderColor), this.ctx.beginPath(), this.ctx.arc(t.x, t.y, 4, 0, 2 * Math.PI), this.ctx.stroke(), this.ctx.fill();
   }
   renderLabelsY() {
     this.lablesYElement ? this.lablesYElement.innerHTML = "" : (this.lablesYElement = document.createElement("div"), this.lablesYElement.classList.add("chart-master__labels"), this.lablesYElement.classList.add("chart-master__labels--y"), this.chartWrapper.classList.add("chart-master__wrapper--pl")), this.labelsY = [];
-    const i = (this.params.height - 2 * this.options.padding) / this.options.yAxisSplitNumber, t = Math.max(...this.data), s = Math.min(...this.data);
+    const t = (this.params.height - 2 * this.options.padding) / this.options.yAxisSplitNumber, s = Math.max(...this.data), i = Math.min(...this.data);
     this.ctx.strokeStyle = this.options.axisYTickColor, this.ctx.lineWidth = this.options.axisYTickWidth;
     for (let e = 0; e <= this.options.yAxisSplitNumber; e++) {
-      const a = this.params.height - this.options.padding - e * i, o = s + (t - s) * (e / this.options.yAxisSplitNumber);
+      const o = this.params.height - this.options.padding - e * t, a = i + (s - i) * (e / this.options.yAxisSplitNumber);
       this.labelsY.push({
-        value: o,
-        yCoord: a
+        value: a,
+        yCoord: o
       });
     }
     for (const e of this.labelsY) {
-      const a = document.createElement("div");
-      a.classList.add("chart-master__label"), a.textContent = e.value, a.style.setProperty("--y", `${e.yCoord}px`), this.lablesYElement.append(a);
+      const o = document.createElement("div");
+      o.classList.add("chart-master__label"), o.textContent = e.value, o.style.setProperty("--y", `${e.yCoord}px`), this.lablesYElement.append(o);
     }
     this.chartWrapper.append(this.lablesYElement);
   }
   renderLabelsX() {
     this.lablesXElement ? this.lablesXElement.innerHTML = "" : (this.lablesXElement = document.createElement("div"), this.lablesXElement.classList.add("chart-master__labels"), this.lablesXElement.classList.add("chart-master__labels--x"), this.chartWrapper.classList.add("chart-master__wrapper--pb")), this.labelsX = [];
-    const i = (this.params.width - 2 * this.options.padding) / (this.data.length - 1);
-    for (let t = 0; t < this.data.length; t++) {
-      const s = this.options.padding + t * i;
+    const t = (this.params.width - 2 * this.options.padding) / (this.data.length - 1);
+    for (let s = 0; s < this.data.length; s++) {
+      const i = this.options.padding + s * t;
       this.labelsX.push({
-        label: t,
-        xCoord: s
+        label: s,
+        xCoord: i
       });
     }
-    for (const t of this.labelsX) {
-      const s = document.createElement("div");
-      s.classList.add("chart-master__label"), s.textContent = t.label, s.style.setProperty("--x", `${t.xCoord}px`), this.lablesXElement.append(s);
+    for (const s of this.labelsX) {
+      const i = document.createElement("div");
+      i.classList.add("chart-master__label"), i.textContent = s.label, i.style.setProperty("--x", `${s.xCoord}px`), this.lablesXElement.append(i);
     }
     this.chartWrapper.append(this.lablesXElement);
   }
   render() {
-    this.drawChart(), this.options.labelsX && this.renderLabelsX(), this.options.labelsY && this.renderLabelsY();
+    this.setDots(), this.drawChart(), this.options.labelsX && this.renderLabelsX(), this.options.labelsY && this.renderLabelsY();
   }
-  handleMouseMove(i) {
-    const t = this.canvas.getBoundingClientRect(), s = i.clientX - t.left, e = i.clientY - t.top;
-    for (const [a, o] of this.dots.entries())
-      if (s >= o.x - this.options.dotRadius - this.options.iteractionAdditionalRadius && s <= o.x + (this.options.dotRadius + this.options.iteractionAdditionalRadius) * 2 && e >= o.y - this.options.dotRadius - this.options.iteractionAdditionalRadius && e <= o.y + (this.options.dotRadius + this.options.iteractionAdditionalRadius) * 2) {
-        this.hoveredDotIndex = a;
+  handleMouseMove(t) {
+    const s = this.canvas.getBoundingClientRect(), i = t.clientX - s.left, e = t.clientY - s.top;
+    for (const [o, a] of this.dots.entries())
+      if (i >= a.x - this.options.dotRadius - this.options.iteractionAdditionalRadius && i <= a.x + (this.options.dotRadius + this.options.iteractionAdditionalRadius) * 2 && e >= a.y - this.options.dotRadius - this.options.iteractionAdditionalRadius && e <= a.y + (this.options.dotRadius + this.options.iteractionAdditionalRadius) * 2) {
+        this.hoveredDotIndex = o;
         break;
       } else
         this.hoveredDotIndex = void 0;
@@ -353,11 +657,11 @@ class c extends x {
       index: this.hoveredDotIndex,
       value: this.dots[this.hoveredDotIndex].value
     }), this.options.tooltip)) {
-      const a = {
+      const o = {
         value: this.dots[this.hoveredDotIndex].value,
         label: this.options.tooltipLabel
-      }, o = this.dots[this.hoveredDotIndex].x, h = this.dots[this.hoveredDotIndex].y;
-      this.removeTooltip(), this.renderTooltip(a, o, h);
+      }, a = this.dots[this.hoveredDotIndex].x, r = this.dots[this.hoveredDotIndex].y;
+      this.removeTooltip(), this.renderTooltip(o, a, r);
     }
   }
   backChartState() {
@@ -370,7 +674,7 @@ class c extends x {
     this.setDots();
   }
 }
-c.defaultOptions = {
+T.defaultOptions = {
   padding: 5,
   axisYColor: "#000000",
   axisYTickLength: 5,
@@ -396,7 +700,6 @@ c.defaultOptions = {
   labelsY: !0,
   gridX: !0,
   gridY: !0,
-  lightenValue: 50,
   tooltip: !0,
   dots: !1,
   dotColor: "#ffffff",
@@ -406,82 +709,65 @@ c.defaultOptions = {
   iteraction: !0,
   iteractionAdditionalRadius: 4,
   tooltipLabel: "",
-  colorTransitionTimingFunction: function(n) {
-    return n < 0.5 ? 2 * n * n : 1 - Math.pow(-2 * n + 2, 2) / 2;
+  colorTransitionTimingFunction: function(h) {
+    return h < 0.5 ? 2 * h * h : 1 - Math.pow(-2 * h + 2, 2) / 2;
   }
 };
-class m extends x {
-  constructor(i) {
-    super(i.element), this.data = i.data, this.options = Object.assign({}, m.defaultOptions, i.options), this.cssModificator = "pie", this.createLayout(), this.setMainParameters(), this.setSize(), this.setSegments(), this.setEvents(), this.mainRender();
+class y extends x {
+  constructor(t) {
+    super(t.element), this.data = t.data, this.options = Object.assign({}, y.defaultOptions, t.options), this.cssModificator = "pie", this.createLayout(), this.setMainParameters(), this.setSize(), this.setSegments(), this.setEvents(), this.mainRender();
   }
   setSegments() {
-    let i = 0;
+    let t = 0;
     this.segments = [];
-    for (const t of this.data) {
-      const s = 2 * Math.PI * t.value / this.params.totalValue;
+    for (const s of this.data) {
+      const i = 2 * Math.PI * s.value / this.params.totalValue;
       this.segments.push({
-        color: t.color,
-        hoverColor: t.hoverColor || this.lightenColor(t.color),
-        currentColor: t.color,
-        value: t.value,
-        label: t.label,
-        startAngle: i,
-        endAngle: i + s
-      }), i += s;
+        color: s.color,
+        hoverColor: s.hoverColor || this.lightenColor(s.color, this.options.lightenValue),
+        currentColor: s.color,
+        value: s.value,
+        label: s.label,
+        startAngle: t,
+        endAngle: t + i
+      }), t += i;
     }
   }
   setParameters() {
-    this.params.totalValue = this.data.reduce((i, t) => i + t.value, 0), this.params.padding = this.options.padding + this.options.borderWidth, this.params.radius = Math.min(this.params.width, this.params.height) / 2 - this.params.padding, this.params.centerX = this.params.width / 2, this.params.centerY = this.params.height / 2;
+    this.params.totalValue = this.data.reduce((t, s) => t + s.value, 0), this.params.padding = this.options.padding + this.options.borderWidth, this.params.radius = Math.min(this.params.width, this.params.height) / 2 - this.params.padding, this.params.centerX = this.params.width / 2, this.params.centerY = this.params.height / 2;
   }
   render() {
     this.drawChart(), this.drawLegend(), this.options.labels && this.renderLabels();
   }
-  drawSegment(i, t, s) {
-    this.ctx.beginPath(), this.ctx.moveTo(this.params.centerX, this.params.centerY), this.ctx.arc(this.params.centerX, this.params.centerY, this.params.radius, i, t), this.ctx.closePath(), this.ctx.fillStyle = s, this.ctx.fill(), this.options.borderWidth > 0 && (this.ctx.strokeStyle = this.options.borderColor, this.ctx.lineWidth = this.options.borderWidth, this.ctx.stroke());
+  drawSegment(t, s, i) {
+    this.ctx.beginPath(), this.ctx.moveTo(this.params.centerX, this.params.centerY), this.ctx.arc(this.params.centerX, this.params.centerY, this.params.radius, t, s), this.ctx.closePath(), this.ctx.fillStyle = i, this.ctx.fill(), this.options.borderWidth > 0 && (this.ctx.strokeStyle = this.options.borderColor, this.ctx.lineWidth = this.options.borderWidth, this.ctx.stroke());
   }
   drawChart() {
-    for (const i of this.segments)
-      this.drawSegment(i.startAngle, i.endAngle, i.currentColor);
+    for (const t of this.segments)
+      this.drawSegment(t.startAngle, t.endAngle, t.currentColor);
   }
-  drawLegend() {
-    if (!this.options.legend)
-      return;
-    this.legendElement || (this.legendElement = document.createElement("div"), this.legendElement.classList.add("chart-master__legend"), this.element.append(this.legendElement)), this.legendElement.innerHTML = "";
-    const i = document.createElement("ul");
-    i.classList.add("chart-master__legend-list"), this.legendElement.append(i);
-    for (const t of this.data) {
-      const s = document.createElement("li");
-      s.classList.add("chart-master__legend-item"), i.append(s);
-      const e = document.createElement("span");
-      e.classList.add("chart-master__legend-color"), e.style.backgroundColor = t.color, s.append(e);
-      const a = document.createElement("span");
-      a.classList.add("chart-master__legend-label"), a.textContent = t.label, s.append(a);
-      const o = document.createElement("span");
-      o.classList.add("chart-master__legend-value"), o.textContent = `${Number.parseFloat((t.value / this.params.totalValue * 100).toFixed(2))}%`, s.append(o);
-    }
-  }
-  handleMouseMove(i) {
+  handleMouseMove(t) {
     const {
-      offsetX: t,
-      offsetY: s
-    } = i, e = t - this.params.centerX, a = s - this.params.centerY, o = Math.sqrt(e * e + a * a);
-    let h = Math.atan2(a, e);
-    h < 0 && (h += 2 * Math.PI);
-    const r = this.segments.findIndex((l) => h > l.startAngle && h < l.endAngle);
-    if (r === -1 || o > this.params.radius)
+      offsetX: s,
+      offsetY: i
+    } = t, e = s - this.params.centerX, o = i - this.params.centerY, a = Math.sqrt(e * e + o * o);
+    let r = Math.atan2(o, e);
+    r < 0 && (r += 2 * Math.PI);
+    const n = this.segments.findIndex((l) => r > l.startAngle && r < l.endAngle);
+    if (n === -1 || a > this.params.radius)
       this.backChartState();
-    else if (this.hoverSegment !== r) {
+    else if (this.hoverSegment !== n) {
       if (this.options.onSegmentHover && typeof this.options.onSegmentHover == "function" && this.options.onSegmentHover({
-        index: r,
-        label: this.segments[r].label,
-        value: this.segments[r].value / this.params.totalValue * 100,
-        rawValue: this.segments[r].value
-      }), this.backChartState(), this.hoverSegment = r, this.hoveredSegmentColor = this.segments[r].hoverColor, this.options.tooltip) {
+        index: n,
+        label: this.segments[n].label,
+        value: this.segments[n].value / this.params.totalValue * 100,
+        rawValue: this.segments[n].value
+      }), this.backChartState(), this.hoverSegment = n, this.hoveredSegmentColor = this.segments[n].hoverColor, this.options.tooltip) {
         const l = {
-          label: this.segments[r].label,
-          value: `${Number.parseFloat((this.segments[r].value / this.params.totalValue * 100).toFixed(2))}%`
-        }, d = (this.segments[r].startAngle + this.segments[r].endAngle) / 2, u = this.params.centerX + this.params.radius / 2 * Math.cos(d), g = this.params.centerY + this.params.radius / 2 * Math.sin(d);
-        this.removeTooltip(), this.renderTooltip(l, u, g);
+          label: this.segments[n].label,
+          value: `${Number.parseFloat((this.segments[n].value / this.params.totalValue * 100).toFixed(2))}%`
+        }, d = (this.segments[n].startAngle + this.segments[n].endAngle) / 2, c = this.params.centerX + this.params.radius / 2 * Math.cos(d), u = this.params.centerY + this.params.radius / 2 * Math.sin(d);
+        this.removeTooltip(), this.renderTooltip(l, c, u);
       }
       this.startAnimation();
     }
@@ -494,28 +780,28 @@ class m extends x {
   }
   renderLabels() {
     this.lablesElement ? this.lablesElement.innerHTML = "" : (this.lablesElement = document.createElement("div"), this.lablesElement.classList.add("chart-master__labels"));
-    for (const i of this.segments) {
-      const t = document.createElement("div");
-      t.classList.add("chart-master__label"), t.innerHTML = `
-      <div class="chart__label-label">${i.label}</div>
-      <div class="chart__label-value">${Number.parseFloat((i.value / this.params.totalValue * 100).toFixed(2))}%</div>
+    for (const t of this.segments) {
+      const s = document.createElement("div");
+      s.classList.add("chart-master__label"), s.innerHTML = `
+      <div class="chart__label-label">${t.label}</div>
+      <div class="chart__label-value">${Number.parseFloat((t.value / this.params.totalValue * 100).toFixed(2))}%</div>
       `;
-      const s = (i.startAngle + i.endAngle) / 2, e = this.params.centerX + this.params.radius / 2 * Math.cos(s), a = this.params.centerY + this.params.radius / 2 * Math.sin(s);
-      t.style.setProperty("--angle", `${s * 180 / Math.PI}deg`), t.style.setProperty("--center-x", `${e}px`), t.style.setProperty("--center-y", `${a}px`), this.lablesElement.append(t);
+      const i = (t.startAngle + t.endAngle) / 2, e = this.params.centerX + this.params.radius / 2 * Math.cos(i), o = this.params.centerY + this.params.radius / 2 * Math.sin(i);
+      s.style.setProperty("--angle", `${i * 180 / Math.PI}deg`), s.style.setProperty("--center-x", `${e}px`), s.style.setProperty("--center-y", `${o}px`), this.lablesElement.append(s);
     }
     this.chartWrapper.append(this.lablesElement);
   }
   animate() {
     if (this.hoverSegment !== void 0) {
-      const t = Date.now() - this.animationStartTime, s = Math.min(t / this.options.colorTransitionDuration, 1), e = this.options.colorTransitionTimingFunction(s);
-      this.segments[this.hoverSegment].currentColor = this.interpolateColor(this.segments[this.hoverSegment].color, this.segments[this.hoverSegment].hoverColor, e), this.drawChart(), s < 1 && (this.animationFrameId = requestAnimationFrame(this.animate.bind(this)));
+      const s = Date.now() - this.animationStartTime, i = Math.min(s / this.options.colorTransitionDuration, 1), e = this.options.colorTransitionTimingFunction(i);
+      this.segments[this.hoverSegment].currentColor = this.interpolateColor(this.segments[this.hoverSegment].color, this.segments[this.hoverSegment].hoverColor, e), this.drawChart(), i < 1 && (this.animationFrameId = requestAnimationFrame(this.animate.bind(this)));
     }
   }
   localUpdate() {
     this.setSegments();
   }
 }
-m.defaultOptions = {
+y.defaultOptions = {
   borderWidth: 0,
   borderColor: "#000000",
   padding: 0,
@@ -524,30 +810,12 @@ m.defaultOptions = {
   tooltip: !0,
   labels: !1,
   iteraction: !0,
-  colorTransitionTimingFunction: function(n) {
-    return n < 0.5 ? 2 * n * n : 1 - Math.pow(-2 * n + 2, 2) / 2;
+  colorTransitionTimingFunction: function(h) {
+    return h < 0.5 ? 2 * h * h : 1 - Math.pow(-2 * h + 2, 2) / 2;
   },
   colorTransitionDuration: 200
-  // onSegmentHover
 };
-class b {
-  constructor(i, t) {
-    switch (i) {
-      case "pie": {
-        new m(t);
-        break;
-      }
-      case "bar": {
-        new p(t);
-        break;
-      }
-      case "line": {
-        new c(t);
-        break;
-      }
-    }
-  }
-}
 export {
-  b as ChartMaster
+  x as ChartMaster,
+  y as default
 };
